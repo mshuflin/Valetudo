@@ -1,7 +1,7 @@
 import React, {createRef} from "react";
 import {RawMapData, RawMapEntityType} from "../api";
 import {MapLayerRenderer} from "./MapLayerRenderer";
-import {PathSVGDrawer} from "./PathSVGDrawer";
+import {PathDrawer} from "./PathDrawer";
 import {trackTransforms} from "./utils/tracked-canvas.js";
 import {TouchHandler} from "./utils/touch-handling.js";
 import StructureManager from "./StructureManager";
@@ -29,6 +29,14 @@ const SCROLL_PARAMETERS = {
     ZOOM_OUT_MULTIPLIER: 1 - 3/4,
     PIXELS_PER_FULL_STEP: 100
 };
+
+const IS_SPECIAL_NEEDS_DEVICE = navigator.userAgent.includes("iPhone") ||
+                                navigator.userAgent.includes("iPad") ||
+                                navigator.userAgent.includes("iPod");
+
+const PATH_TYPE = IS_SPECIAL_NEEDS_DEVICE ? "PNG" : "SVG";
+
+
 
 class Map<P, S> extends React.Component<P & MapProps, S & MapState > {
     protected readonly canvasRef: React.RefObject<HTMLCanvasElement>;
@@ -218,7 +226,8 @@ class Map<P, S> extends React.Component<P & MapProps, S & MapState > {
                     switch (entity.type) {
                         case RawMapEntityType.Path:
                         case RawMapEntityType.PredictedPath: {
-                            const pathImg = await PathSVGDrawer.drawPathSVG(
+                            const pathImg = await PathDrawer.drawPath(
+                                PATH_TYPE,
                                 entity,
                                 this.props.rawMap.size.x,
                                 this.props.rawMap.size.y,
